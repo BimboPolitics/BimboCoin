@@ -13,29 +13,29 @@
 %endif
 %endif
 
-Name:		bitcoin
-Version:	0.12.0
+Name:		BimboCoin
+Version:	1.0.0
 Release:	2%{?dist}
 Summary:	Peer to Peer Cryptographic Currency
 
 Group:		Applications/System
 License:	MIT
-URL:		https://bitcoin.org/
-Source0:	https://bitcoin.org/bin/bitcoin-core-%{version}/bitcoin-%{version}.tar.gz
+URL:		https://bimbocoin.org/
+Source0:	https://github.com/BimboPolitics/BimboCoin/archive/v1.0.0.tar.gz
 Source1:	http://download.oracle.com/berkeley-db/db-%{bdbv}.NC.tar.gz
 
-Source10:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/contrib/debian/examples/bitcoin.conf
+Source10:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/contrib/debian/examples/bitcoin.conf
 
-#man pages
-Source20:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/doc/man/bitcoind.1
-Source21:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/doc/man/bitcoin-cli.1
-Source22:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/doc/man/bitcoin-qt.1
+#Man pages
+Source20:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/doc/man/bimbocoind.1
+Source21:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/doc/man/bimbocoin-cli.1
+Source22:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/doc/man/bimbocoin-qt.1
 
 #selinux
-Source30:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/contrib/rpm/bitcoin.te
+Source30:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/contrib/rpm/bitcoin.te
 # Source31 - what about bitcoin-tx and bench_bitcoin ???
-Source31:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/contrib/rpm/bitcoin.fc
-Source32:	https://raw.githubusercontent.com/bitcoin/bitcoin/v%{version}/contrib/rpm/bitcoin.if
+Source31:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/contrib/rpm/bitcoin.fc
+Source32:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/contrib/rpm/bitcoin.if
 
 Source100:	https://upload.wikimedia.org/wikipedia/commons/4/46/Bitcoin.svg
 
@@ -50,7 +50,7 @@ BuildRequires:	autoconf automake libtool
 BuildRequires:	libevent-devel
 
 
-Patch0:		bitcoin-0.12.0-libressl.patch
+#Patch0:		bitcoin-0.12.0-libressl.patch
 
 
 %description
@@ -112,7 +112,7 @@ that wants to link against that library, then you need this package installed.
 Most people do not need this package installed.
 
 %package server
-Summary:	The bitcoin daemon
+Summary:	The bimbocoin daemon
 Group:		System Environment/Daemons
 Requires:	bitcoin-utils = %{version}-%{release}
 Requires:	selinux-policy policycoreutils-python
@@ -134,14 +134,14 @@ If you use the graphical bitcoin-core client then you almost certainly do not
 need this package.
 
 %package utils
-Summary:	Bitcoin utilities
+Summary:	Bimbocoin utilities
 Group:		Applications/System
 
 %description utils
 This package provides several command line utilities for interacting with a
-bitcoin-core daemon.
+bimbocoin-core daemon.
 
-The bitcoin-cli utility allows you to communicate and control a bitcoin daemon
+The bimbocoin-cli utility allows you to communicate and control a bitcoin daemon
 over RPC, the bitcoin-tx utility allows you to create a custom transaction, and
 the bench_bitcoin utility can be used to perform some benchmarks.
 
@@ -150,7 +150,7 @@ This package contains utilities needed by the bitcoin-server package.
 
 %prep
 %setup -q
-%patch0 -p1 -b .libressl
+# %patch0 -p1 -b .libressl
 cp -p %{SOURCE10} ./bitcoin.conf.example
 tar -zxf %{SOURCE1}
 cp -p db-%{bdbv}.NC/LICENSE ./db-%{bdbv}.NC-LICENSE
@@ -182,17 +182,17 @@ popd
 make install DESTDIR=%{buildroot}
 
 mkdir -p -m755 %{buildroot}%{_sbindir}
-mv %{buildroot}%{_bindir}/bitcoind %{buildroot}%{_sbindir}/bitcoind
+mv %{buildroot}%{_bindir}/bimbocoind %{buildroot}%{_sbindir}/bimbocoind
 
 # systemd stuff
 mkdir -p %{buildroot}%{_tmpfilesdir}
 cat <<EOF > %{buildroot}%{_tmpfilesdir}/bitcoin.conf
-d /run/bitcoind 0750 bitcoin bitcoin -
+d /run/bimbocoind 0750 bimbocoin bimbocoin -
 EOF
 touch -a -m -t 201504280000 %{buildroot}%{_tmpfilesdir}/bitcoin.conf
 
 mkdir -p %{buildroot}%{_sysconfdir}/sysconfig
-cat <<EOF > %{buildroot}%{_sysconfdir}/sysconfig/bitcoin
+cat <<EOF > %{buildroot}%{_sysconfdir}/sysconfig/bimbocoin
 # Provide options to the bitcoin daemon here, for example
 # OPTIONS="-testnet -disable-wallet"
 
@@ -200,24 +200,24 @@ OPTIONS=""
 
 # System service defaults.
 # Don't change these unless you know what you're doing.
-CONFIG_FILE="%{_sysconfdir}/bitcoin/bitcoin.conf"
-DATA_DIR="%{_localstatedir}/lib/bitcoin"
-PID_FILE="/run/bitcoind/bitcoind.pid"
+CONFIG_FILE="%{_sysconfdir}/bimbocoin/bitcoin.conf"
+DATA_DIR="%{_localstatedir}/lib/bimbocoin"
+PID_FILE="/run/bimbocoind/bimbocoind.pid"
 EOF
-touch -a -m -t 201504280000 %{buildroot}%{_sysconfdir}/sysconfig/bitcoin
+touch -a -m -t 201504280000 %{buildroot}%{_sysconfdir}/sysconfig/bimbocoin
 
 mkdir -p %{buildroot}%{_unitdir}
-cat <<EOF > %{buildroot}%{_unitdir}/bitcoin.service
+cat <<EOF > %{buildroot}%{_unitdir}/bimbocoin.service
 [Unit]
-Description=Bitcoin daemon
+Description=Bimbocoin daemon
 After=syslog.target network.target
 
 [Service]
 Type=forking
-ExecStart=%{_sbindir}/bitcoind -daemon -conf=\${CONFIG_FILE} -datadir=\${DATA_DIR} -pid=\${PID_FILE} \$OPTIONS
-EnvironmentFile=%{_sysconfdir}/sysconfig/bitcoin
-User=bitcoin
-Group=bitcoin
+ExecStart=%{_sbindir}/bimbocoind -daemon -conf=\${CONFIG_FILE} -datadir=\${DATA_DIR} -pid=\${PID_FILE} \$OPTIONS
+EnvironmentFile=%{_sysconfdir}/sysconfig/bimbocoin
+User=bimbocoin
+Group=bimbocoin
 
 Restart=on-failure
 PrivateTmp=true
@@ -232,13 +232,13 @@ EOF
 touch -a -m -t 201504280000 %{buildroot}%{_unitdir}/bitcoin.service
 #end systemd stuff
 
-mkdir %{buildroot}%{_sysconfdir}/bitcoin
-mkdir -p %{buildroot}%{_localstatedir}/lib/bitcoin
+mkdir %{buildroot}%{_sysconfdir}/bimbocoin
+mkdir -p %{buildroot}%{_localstatedir}/lib/bimbocoin
 
 #SELinux
 for selinuxvariant in %{selinux_variants}; do
 	install -d %{buildroot}%{_datadir}/selinux/${selinuxvariant}
-	install -p -m 644 SELinux/bitcoin.pp.${selinuxvariant} %{buildroot}%{_datadir}/selinux/${selinuxvariant}/bitcoin.pp
+	install -p -m 644 SELinux/bitcoin.pp.${selinuxvariant} %{buildroot}%{_datadir}/selinux/${selinuxvariant}/bimbocoin.pp
 done
 
 %if %{_buildqt}
@@ -262,30 +262,30 @@ touch %{buildroot}%{_datadir}/pixmaps/*.xpm -r %{SOURCE100}
 
 # Desktop File - change the touch timestamp if modifying
 mkdir -p %{buildroot}%{_datadir}/applications
-cat <<EOF > %{buildroot}%{_datadir}/applications/bitcoin-core.desktop
+cat <<EOF > %{buildroot}%{_datadir}/applications/bimbocoin-core.desktop
 [Desktop Entry]
 Encoding=UTF-8
-Name=Bitcoin
-Comment=Bitcoin P2P Cryptocurrency
-Comment[fr]=Bitcoin, monnaie virtuelle cryptographique pair à pair
-Comment[tr]=Bitcoin, eşten eşe kriptografik sanal para birimi
+Name=Bimbocoin
+Comment=Bimbocoin P2P Cryptocurrency
+Comment[fr]=Bimbocoin, monnaie virtuelle cryptographique pair à pair
+Comment[tr]=Bimbocoin, eşten eşe kriptografik sanal para birimi
 Exec=bitcoin-qt %u
 Terminal=false
 Type=Application
 Icon=bitcoin128
-MimeType=x-scheme-handler/bitcoin;
+MimeType=x-scheme-handler/bimbocoin;
 Categories=Office;Finance;
 EOF
 # change touch date when modifying desktop
-touch -a -m -t 201511100546 %{buildroot}%{_datadir}/applications/bitcoin-core.desktop
-%{_bindir}/desktop-file-validate %{buildroot}%{_datadir}/applications/bitcoin-core.desktop
+touch -a -m -t 201511100546 %{buildroot}%{_datadir}/applications/bimbocoin-core.desktop
+%{_bindir}/desktop-file-validate %{buildroot}%{_datadir}/applications/bimbocoin-core.desktop
 
 # KDE protocol - change the touch timestamp if modifying
 mkdir -p %{buildroot}%{_datadir}/kde4/services
-cat <<EOF > %{buildroot}%{_datadir}/kde4/services/bitcoin-core.protocol
+cat <<EOF > %{buildroot}%{_datadir}/kde4/services/bimbocoin-core.protocol
 [Protocol]
-exec=bitcoin-qt '%u'
-protocol=bitcoin
+exec=bimbocoin-qt '%u'
+protocol=bimbocoin
 input=none
 output=none
 helper=true
@@ -296,14 +296,14 @@ makedir=false
 deleting=false
 EOF
 # change touch date when modifying protocol
-touch -a -m -t 201511100546 %{buildroot}%{_datadir}/kde4/services/bitcoin-core.protocol
+touch -a -m -t 201511100546 %{buildroot}%{_datadir}/kde4/services/bimbocoin-core.protocol
 %endif
 
 # man pages
-install -D -p %{SOURCE20} %{buildroot}%{_mandir}/man1/bitcoind.1
-install -p %{SOURCE21} %{buildroot}%{_mandir}/man1/bitcoin-cli.1
+install -D -p %{SOURCE20} %{buildroot}%{_mandir}/man1/bimbocoind.1
+install -p %{SOURCE21} %{buildroot}%{_mandir}/man1/bimbocoin-cli.1
 %if %{_buildqt}
-install -p %{SOURCE22} %{buildroot}%{_mandir}/man1/bitcoin-qt.1
+install -p %{SOURCE22} %{buildroot}%{_mandir}/man1/bimbocoin-qt.1
 %endif
 
 # nuke these, we do extensive testing of binaries in %%check before packaging
@@ -311,7 +311,7 @@ rm -f %{buildroot}%{_bindir}/test_*
 
 %check
 make check
-srcdir=src test/bitcoin-util-test.py
+srcdir=src test/bimbocoin-util-test.py
 test/functional/test_runner.py --extended
 
 %post libs -p /sbin/ldconfig
@@ -319,37 +319,37 @@ test/functional/test_runner.py --extended
 %postun libs -p /sbin/ldconfig
 
 %pre server
-getent group bitcoin >/dev/null || groupadd -r bitcoin
-getent passwd bitcoin >/dev/null ||
-	useradd -r -g bitcoin -d /var/lib/bitcoin -s /sbin/nologin \
-	-c "Bitcoin wallet server" bitcoin
+getent group bimbocoin >/dev/null || groupadd -r bimbocoin
+getent passwd bimbocoin >/dev/null ||
+	useradd -r -g bimbocoin -d /var/lib/bimbocoin -s /sbin/nologin \
+	-c "Bimbocoin wallet server" bimbocoin
 exit 0
 
 %post server
-%systemd_post bitcoin.service
+%systemd_post bimbocoin.service
 # SELinux
 if [ `%{_sbindir}/sestatus |grep -c "disabled"` -eq 0 ]; then
 for selinuxvariant in %{selinux_variants}; do
-	%{_sbindir}/semodule -s ${selinuxvariant} -i %{_datadir}/selinux/${selinuxvariant}/bitcoin.pp &> /dev/null || :
+	%{_sbindir}/semodule -s ${selinuxvariant} -i %{_datadir}/selinux/${selinuxvariant}/bimbocoin.pp &> /dev/null || :
 done
-%{_sbindir}/semanage port -a -t bitcoin_port_t -p tcp 30815
-%{_sbindir}/semanage port -a -t bitcoin_port_t -p tcp 30816
-%{_sbindir}/semanage port -a -t bitcoin_port_t -p tcp 40815
-%{_sbindir}/semanage port -a -t bitcoin_port_t -p tcp 40816
-%{_sbindir}/semanage port -a -t bitcoin_port_t -p tcp 19443
-%{_sbindir}/semanage port -a -t bitcoin_port_t -p tcp 19444
-%{_sbindir}/fixfiles -R bitcoin-server restore &> /dev/null || :
-%{_sbindir}/restorecon -R %{_localstatedir}/lib/bitcoin || :
+%{_sbindir}/semanage port -a -t bimbocoin_port_t -p tcp 30815
+%{_sbindir}/semanage port -a -t bimbocoin_port_t -p tcp 30816
+%{_sbindir}/semanage port -a -t bimbocoin_port_t -p tcp 40815
+%{_sbindir}/semanage port -a -t bimbocoin_port_t -p tcp 40816
+%{_sbindir}/semanage port -a -t bimbocoin_port_t -p tcp 19443
+%{_sbindir}/semanage port -a -t bimbocoin_port_t -p tcp 19444
+%{_sbindir}/fixfiles -R bimbocoin-server restore &> /dev/null || :
+%{_sbindir}/restorecon -R %{_localstatedir}/lib/bimbocoin || :
 fi
 
 %posttrans server
 %{_bindir}/systemd-tmpfiles --create
 
 %preun server
-%systemd_preun bitcoin.service
+%systemd_preun bimbocoin.service
 
 %postun server
-%systemd_postun bitcoin.service
+%systemd_postun bimbocoin.service
 # SELinux
 if [ $1 -eq 0 ]; then
 	if [ `%{_sbindir}/sestatus |grep -c "disabled"` -eq 0 ]; then
@@ -360,11 +360,11 @@ if [ $1 -eq 0 ]; then
 	%{_sbindir}/semanage port -d -p tcp 19443
 	%{_sbindir}/semanage port -d -p tcp 19444
 	for selinuxvariant in %{selinux_variants}; do
-		%{_sbindir}/semodule -s ${selinuxvariant} -r bitcoin &> /dev/null || :
+		%{_sbindir}/semodule -s ${selinuxvariant} -r bimbocoin &> /dev/null || :
 	done
-	%{_sbindir}/fixfiles -R bitcoin-server restore &> /dev/null || :
-	[ -d %{_localstatedir}/lib/bitcoin ] && \
-		%{_sbindir}/restorecon -R %{_localstatedir}/lib/bitcoin &> /dev/null || :
+	%{_sbindir}/fixfiles -R bimbocoin-server restore &> /dev/null || :
+	[ -d %{_localstatedir}/lib/bimbocoin ] && \
+		%{_sbindir}/restorecon -R %{_localstatedir}/lib/bimbocoin &> /dev/null || :
 	fi
 fi
 
@@ -376,15 +376,15 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %license COPYING db-%{bdbv}.NC-LICENSE
 %doc COPYING bitcoin.conf.example doc/README.md doc/bips.md doc/files.md doc/multiwallet-qt.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
-%attr(0755,root,root) %{_bindir}/bitcoin-qt
-%attr(0644,root,root) %{_datadir}/applications/bitcoin-core.desktop
-%attr(0644,root,root) %{_datadir}/kde4/services/bitcoin-core.protocol
+%attr(0755,root,root) %{_bindir}/bimbocoin-qt
+%attr(0644,root,root) %{_datadir}/applications/bimbocoin-core.desktop
+%attr(0644,root,root) %{_datadir}/kde4/services/bimbocoin-core.protocol
 %attr(0644,root,root) %{_datadir}/pixmaps/*.ico
 %attr(0644,root,root) %{_datadir}/pixmaps/*.bmp
 %attr(0644,root,root) %{_datadir}/pixmaps/*.svg
 %attr(0644,root,root) %{_datadir}/pixmaps/*.png
 %attr(0644,root,root) %{_datadir}/pixmaps/*.xpm
-%attr(0644,root,root) %{_mandir}/man1/bitcoin-qt.1*
+%attr(0644,root,root) %{_mandir}/man1/bimbocoin-qt.1*
 %endif
 
 %files libs
@@ -407,23 +407,23 @@ rm -rf %{buildroot}
 %defattr(-,root,root,-)
 %license COPYING db-%{bdbv}.NC-LICENSE
 %doc COPYING bitcoin.conf.example doc/README.md doc/REST-interface.md doc/bips.md doc/dnsseed-policy.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
-%attr(0755,root,root) %{_sbindir}/bitcoind
+%attr(0755,root,root) %{_sbindir}/bimbocoind
 %attr(0644,root,root) %{_tmpfilesdir}/bitcoin.conf
-%attr(0644,root,root) %{_unitdir}/bitcoin.service
-%dir %attr(0750,bitcoin,bitcoin) %{_sysconfdir}/bitcoin
-%dir %attr(0750,bitcoin,bitcoin) %{_localstatedir}/lib/bitcoin
-%config(noreplace) %attr(0600,root,root) %{_sysconfdir}/sysconfig/bitcoin
+%attr(0644,root,root) %{_unitdir}/bimbocoin.service
+%dir %attr(0750,bitcoin,bitcoin) %{_sysconfdir}/bimbocoin
+%dir %attr(0750,bitcoin,bitcoin) %{_localstatedir}/lib/bimbocoin
+%config(noreplace) %attr(0600,root,root) %{_sysconfdir}/sysconfig/bimbocoin
 %attr(0644,root,root) %{_datadir}/selinux/*/*.pp
-%attr(0644,root,root) %{_mandir}/man1/bitcoind.1*
+%attr(0644,root,root) %{_mandir}/man1/bimbocoind.1*
 
 %files utils
 %defattr(-,root,root,-)
 %license COPYING
 %doc COPYING bitcoin.conf.example doc/README.md
-%attr(0755,root,root) %{_bindir}/bitcoin-cli
-%attr(0755,root,root) %{_bindir}/bitcoin-tx
-%attr(0755,root,root) %{_bindir}/bench_bitcoin
-%attr(0644,root,root) %{_mandir}/man1/bitcoin-cli.1*
+%attr(0755,root,root) %{_bindir}/bimbocoin-cli
+%attr(0755,root,root) %{_bindir}/bimbocoin-tx
+%attr(0755,root,root) %{_bindir}/bench_bimbocoin
+%attr(0644,root,root) %{_mandir}/man1/bimbocoin-cli.1*
 
 
 
