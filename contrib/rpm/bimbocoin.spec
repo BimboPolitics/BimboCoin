@@ -30,6 +30,7 @@ Source10:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/contr
 Source20:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/doc/man/bimbocoind.1
 Source21:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/doc/man/bimbocoin-cli.1
 Source22:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/doc/man/bimbocoin-qt.1
+Source23:       https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/doc/man/bimbocoin-tx.1
 
 #selinux
 Source30:	https://raw.githubusercontent.com/BimboPolitics/BimboCoin/master/contrib/rpm/bitcoin.te
@@ -114,7 +115,7 @@ Most people do not need this package installed.
 %package server
 Summary:	The bimbocoin daemon
 Group:		System Environment/Daemons
-Requires:	bitcoin-utils = %{version}-%{release}
+Requires:	BimboCoin-utils = %{version}-%{release}
 Requires:	selinux-policy policycoreutils-python
 Requires(pre):	shadow-utils
 Requires(post):	%{_sbindir}/semodule %{_sbindir}/restorecon %{_sbindir}/fixfiles %{_sbindir}/sestatus
@@ -229,7 +230,7 @@ StartLimitBurst=5
 [Install]
 WantedBy=multi-user.target
 EOF
-touch -a -m -t 201504280000 %{buildroot}%{_unitdir}/bitcoin.service
+touch -a -m -t 201504280000 %{buildroot}%{_unitdir}/bimbocoin.service
 #end systemd stuff
 
 mkdir %{buildroot}%{_sysconfdir}/bimbocoin
@@ -304,6 +305,7 @@ install -D -p %{SOURCE20} %{buildroot}%{_mandir}/man1/bimbocoind.1
 install -p %{SOURCE21} %{buildroot}%{_mandir}/man1/bimbocoin-cli.1
 %if %{_buildqt}
 install -p %{SOURCE22} %{buildroot}%{_mandir}/man1/bimbocoin-qt.1
+install -p %{SOURCE23} %{buildroot}%{_mandir}/man1/bimbocoin-tx.1
 %endif
 
 # nuke these, we do extensive testing of binaries in %%check before packaging
@@ -376,7 +378,7 @@ rm -rf %{buildroot}
 %files core
 %defattr(-,root,root,-)
 %license COPYING db-%{bdbv}.NC-LICENSE
-%doc COPYING bitcoin.conf.example doc/README.md doc/bips.md doc/files.md doc/reduce-traffic.md doc/release-notes.md doc/tor.md
+%doc COPYING bitcoin.conf.example doc/README.md doc/bips.md doc/files.md  doc/reduce-traffic.md doc/release-notes.md doc/tor.md
 %attr(0755,root,root) %{_bindir}/bimbocoin-qt
 %attr(0644,root,root) %{_datadir}/applications/bimbocoin-core.desktop
 %attr(0644,root,root) %{_datadir}/kde4/services/bimbocoin-core.protocol
@@ -425,7 +427,7 @@ rm -rf %{buildroot}
 %attr(0755,root,root) %{_bindir}/bimbocoin-tx
 %attr(0755,root,root) %{_bindir}/bench_bimbocoin
 %attr(0644,root,root) %{_mandir}/man1/bimbocoin-cli.1*
-
+%attr(0644,root,root) %{_mandir}/man1/bimbocoin-tx.1*
 
 
 %changelog
